@@ -3,7 +3,9 @@ rails d scaffold Comment
 rails d scaffold Article
 rm db/schema.rb
 edit config/routes.rb
-
+edit openshift/templates/?.json
+ReadinessProbe
+LivenessPRobe
 bundle install --path vendor/bundle
 edit .gitignore
 edit memo.txt
@@ -23,6 +25,6 @@ openshift:
 ?rails d controller welcome
 ?add openshift/templates/:name.json
 ?edit :name.json dockerfile: 'RUN dnf install cmake' ???
-
+?     or add in migarate-database.sh ???
 ?edit Gemfile
 ?rails g controller Top index...
