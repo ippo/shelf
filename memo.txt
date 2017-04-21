@@ -1,25 +1,54 @@
-init(clone+reset) from openshift/rails-ex.git
+local:
+  ruby:2.4.1
+
+base: init(=clone+reset) openshift/rails-ex
+git clone https://github.com/openshift/rails-ex.git shelf
+cd shelf
+rm -rf .git
 rails d scaffold Comment
 rails d scaffold Article
 rm db/schema.rb
-edit config/routes.rb
-edit openshift/templates/?-persistent.json
-ReadinessProbe -> /
-LivenessProbe  -> /
-bundle install --path vendor/bundle
-edit .gitignore
-edit memo.txt
+edit:
+memo.txt
+.gitignore           # *~, vendro/bundle
+config/routes.rb     # /articles # live check of rails-pgsql-persistent
+?rm -r openshift?
 
 git init
-git config user.*
-git remote add *
+git config user.name ...
+git config user.email ...
+git config -l
+git remote add origin ...
+git remote -v
 git add .
-git commit -m "init *"
+git commit -m "..."
 git push -u origin master
 
-openshift:
+openshift(nextgen):
   base: rails-pgsql-persistent
-  name: -> book ?
+    ruby:2.3
+    postgresql:9.5
+  name: :theme
+  git: https://github.com/:user/:your_project.git
+  -> uri: http://(:theme)-(:project).44fs.preview.openshiftapps.com
+  Builds/Builds/:theme/Start Build
+
+github:
+  :project -> Settings Webhooks
+    Payload URL <- openshift Builds/Builds/:theme/Configuration/GitHub Web hook URL
+    Content type -> application/json
+
+edit:
+Gemfile              # pg
+                     # ?listen in production?
+config/database.yml  # postgresql/sqlite3
+
+
+
+bundle install --path vendor/bundle
+bundle exec rails s -b 0.0.0.0
+bundle pumactl start
+
 
 ?rm public/index.html
 ?rails d controller welcome
@@ -28,3 +57,8 @@ openshift:
 ?edit Gemfile
 ?edit config/database.yml
 ?rails g controller Top index...
+
+
+note:
+  openshift:
+    Warning: the running version of Bundler is older than the version that created the lockfile. We suggest you upgrade to the latest version of Bundler by running `gem install bundler`.
