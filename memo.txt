@@ -2,6 +2,7 @@ init(clone+reset) from openshift/rails-ex.git
 rails d scaffold Comment
 rails d scaffold Article
 rm db/schema.rb
+edit config/routes.rb
 
 bundle install --path vendor/bundle
 edit .gitignore
@@ -14,6 +15,14 @@ git add .
 git commit -m "init *"
 git push -u origin master
 
+openshift:
+  base: rails-pgsql-persistent
+  name: -> book ?
+
 ?rm public/index.html
 ?rails d controller welcome
 ?add openshift/templates/:name.json
+?edit :name.json dockerfile: 'RUN dnf install cmake' ???
+
+?edit Gemfile
+?rails g controller Top index...
