@@ -1,0 +1,19 @@
+init(clone+reset) from openshift/rails-ex.git
+rails d scaffold Comment
+rails d scaffold Article
+rm db/schema.rb
+
+bundle install --path vendor/bundle
+edit .gitignore
+edit memo.txt
+
+git init
+git config user.*
+git remote add *
+git add .
+git commit -m "init *"
+git push -u origin master
+
+?rm public/index.html
+?rails d controller welcome
+?add openshift/templates/:name.json
