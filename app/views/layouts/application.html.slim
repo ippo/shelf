@@ -1,0 +1,93 @@
+doctype html
+html
+  head
+    meta charset='utf-8'
+    meta http-equiv='X-UA-Compatible' content='IE=edge'
+    meta name='viewport' content='width=device-width, initial-scale=1'
+    title
+      = yield :title
+      = ' ' if content_for? :title
+      | Shelf
+    = csrf_meta_tags
+    = stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload'
+    = javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
+  body
+    header.navbar.navbar-inverse.navbar-fixed-top.pmd-navbar.pmd-z-depth
+      .container-fluid
+        .navbar-header
+          a.pmd-sidebar-toggle.btn.btn-sm.btn-primary.pmd-btn-fab.pmd-btn-flat.pull-left.pmd-ripple-effect
+            i.material-icons account_box
+          a.navbar-brand.pmd-ripple-effect href=root_path Shelf
+          a.navbar-toggle.pmd-navbar-toggle data-toggle='collapse' data-target='#header_menu'
+            i.material-icons menu
+          a.btn.btn-sm.btn-success.pmd-btn-fab.pull-right.pmd-ripple-effect href=check_path
+            i.material-icons check
+        .collapse.navbar-collapse#header_menu
+          ul.nav.navbar-nav.navbar-left
+            li.pmd-ripple-effect
+              a href=index_path Index
+              span.sr-only (current)
+            li.pmd-ripple-effect
+              a href=check_path Check
+            li.pmd-ripple-effect
+              a href=new_path News
+            li.pmd-ripple-effect
+              a href=contact_path Contact
+            li.pmd-ripple-effect
+              a href=about_path About
+    .pmd-sidebar-overlay
+    aside.pmd-sidebar.sidebar-default.pmd-sidebar-slide-push.pmd-sidebar-left.pmd-z-depth
+      ul.nav.pmd-sidebar-nav
+        li.pmd-ripple-effect
+          a
+            i.material-icons.media-left.media-middle assignment_ind
+            span.media-body Sign In
+        li.pmd-ripple-effect
+          a
+            i.material-icons.media-left.media-middle assignment_return
+            span.media-body Log In
+        li.pmd-ripple-effect
+          a
+            i.material-icons.media-left.media-middle exit_to_app
+            span.media-body Log Out
+        li.pmd-ripple-effect
+          a
+            i.material-icons.media-left.media-middle https
+            span.media-body Password
+        li.pmd-ripple-effect
+          a
+            i.material-icons.media-left.media-middle assignment
+            span.media-body User Info
+        li.pmd-ripple-effect
+          a
+            i.material-icons.media-left.media-middle folder_shared
+            span.media-body My Room
+        li.pmd-ripple-effect
+          a
+            i.material-icons.media-left.media-middle folder
+            span.media-body My Frame
+        li.pmd-ripple-effect
+          a
+            i.material-icons.media-left.media-middle folder_open
+            span.media-body My Board
+        li.pmd-ripple-effect
+          a
+            i.material-icons.media-left.media-middle folder_special
+            span.media-body My Item
+    main.pmd-content
+      .container-fluid
+        = yield
+    footer
+      .container-fluid
+        ul.list-unstyled.list-inline.pull-right
+          li.powered
+            | Powered by
+            a< href='https://www.ruby-lang.org/' Ruby
+            | (#{RUBY_VERSION})
+            = ' on ' 
+            a< href='http://rubyonrails.org/' Rails
+            | (#{Rails.version})
+          li.provider
+            | &copy; ippo 2017
+          li.version
+            | Ver.#{session[:version] || '???'}

@@ -11,6 +11,10 @@
 // about supported directives.
 //
 //= require jquery
+// x= require jquery.turbolinks
 //= require jquery_ujs
-//= require turbolinks
+//= require bootstrap.min
+//= require propeller.min
+//= require quagga.min
+// x= require turbolinks
 //= require_tree .

@@ -12,7 +12,7 @@ edit:
 memo.txt
 .gitignore           # *~, vendro/bundle
 config/routes.rb     # /articles # live check of rails-pgsql-persistent
-?rm -r openshift?
+rm -r openshift
 
 git init
 git config user.name ...
@@ -42,23 +42,90 @@ edit:
 Gemfile              # pg
                      # ?listen in production?
 config/database.yml  # postgresql/sqlite3
+Gemfile              # slim-rails, devise, rails_admin, etc
 
-
-
+development:
 bundle install --path vendor/bundle
 bundle exec rails s -b 0.0.0.0
 bundle pumactl start
 
+clear:
+rm public/index.html
+rails d controller welcome
+edit:
+config/puma.rb + tmp/server.*
 
-?rm public/index.html
-?rails d controller welcome
-?add openshift/templates/:name.json
-?edit :name.json dockerfile: 'RUN dnf install cmake; gem install bundle' ???
-?edit Gemfile
-?edit config/database.yml
-?rails g controller Top index...
+convert:
+for i in app/views/**/*.erb; do erb2slim $i ${i%erb}slim && rm $i; done
 
+setup:
+bundle exec rails generate simple_form:install --bootstrap
+bundle exec rails g controller Top index check user room frame board item new contact about alive
+rm app/views/top/alive.*
+cp public/*mp3
+cp public/fonts/roboto/*.ttf, *.woff
+cp app/assets/stylesheets/* bootstrap(_theme), propeller, material_icons, quagga
+cp app/assets/javascripts/*
+edit app/controller/application_controller.rb version
+edit app/controller/top_controller.rb
+edit config/route.rb
+
+- table?
+user
+room(space) frame(cage,wall) board(shelf,box,case,plate,rack,tray)
+item
+version?
+
+- route?
+/
+/user/:user
+/user/:user/room/:room/frame/:frame/board/:board/item/:item
+/user/:user/room/:room
+/user/:user/frame/:frame
+/user/:user/board/:board
+/user/:user/item/:item
+
+?work?
+bundle exec rails g devise:install
+bundle exec rails g devise User provider uid name token intro:text info:text
+  add_index :users, [:provider, :uid], unique: true
+  dvise: ..., :omniauthable
+  serialize :info
+  has_and_belongs_to_many :roles
+  def has_role? ( code )
+    self.roles.where(code: code).length > 0
+  end
+bundle exec rails g model Role code name
+  has_and_belongs_to_many :users
+bundle exec rails g migration CreateJoinTableUserRole user role
+  comment-in t.index
+bundle exec rails g cancan:ability
+    user ||= User.new #= guest or no-login
+    if user.has_role? 'admin'
+      can :manage, :all
+    elsif user.has_role? 'staff'
+      can :read, :all
+      can :access, :rails_admin
+      can :dashboard
+    elsif user.id
+      can :read, :all
+      #can :manage, Xxx
+    else
+      can :read, :all
+    end
+
+bundle exec rails g simple_form:install
+bundle exec rails g devise:i18n:views
+
+? openshift https route?
+? move sounds/fonts to assets/ from public/ ?
+? data dump/load ? rails_admin ?
+? openbd, gbook, amazon?
+
+?edit openshift-config dockerfile: 'RUN dnf install cmake; gem install bundle' ???
 
 note:
   openshift:
     Warning: the running version of Bundler is older than the version that created the lockfile. We suggest you upgrade to the latest version of Bundler by running `gem install bundler`.
+  development:
+    ? pumactl overload stop error?

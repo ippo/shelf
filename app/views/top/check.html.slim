@@ -1,0 +1,198 @@
+article
+  h1 コード・チェック
+  section.pmd-card.pmd-card-default.pmd-z-depth
+    .pmd-card-body
+      h2 カメラ
+      div#cameras
+      div#barcode-scanner
+  section.pmd-card.pmd-card-default.pmd-z-depth
+    .pmd-card-body
+      h2 コード入力
+      form
+        ul.list-inline
+          li.form-group.pmd-textfield
+            label.control-label for='code' Code
+            input.form-control#code type='text'
+          li.pmd-switch
+            label
+              input#auto type='checkbox' checked='on'
+              span.pmd-switch-label
+              span.pmd-tooltip data-toggle='tooltip' data-placement='bottom' title='連続取得' Auto
+          li.pmd-switch
+            label
+              input#pick type='checkbox'
+              span.pmd-switch-label
+              span.pmd-tooltip data-toggle='tooltip' data-placement='bottom' title='1コード取得で別頁へ' 1PickUp
+          li
+            button#enter.btn.btn-primary.pmd-btn-fab.pmd-ripple-effect
+              i.material-icons.pmd-sm add
+      audio#ok
+        source src='/se_maoudamashii_system46.mp3'
+      audio#ng
+        source src='/se_maoudamashii_system25.mp3'
+  section.pmd-card.pmd-card-default.pmd-z-depth
+    .pmd-card-body
+      h2 結果
+      ul#results
+
+javascript:
+  var results = [];
+  function inputCode(){
+    var code = $('#code').val();
+    if((code != '') && ($.inArray(code, results) == -1)){
+      $('#ok')[0].play();
+      var li = document.createElement('li');
+      li.innerText = code;  
+      $('#results').prepend(li);
+      results.push(code);
+    }else{
+      $('#ng')[0].play();
+    }
+    $('#code').val('');
+  };
+
+  $('#code').keypress(function(e){
+    if(e.which == 13){
+      inputCode();
+      return false;
+    }
+  });
+  $('#enter').click(function(e){
+    inputCode();
+    return false;
+  });
+
+  function orderByCount(array){
+    var counts = {};
+    array.forEach(function(value){
+      if(!counts[value]){
+        counts[value] = 0;
+      }
+      counts[value]++;
+    });
+    return Object.keys(counts).sort(function(currentKey, nextKey){
+      return counts[currentKey] < counts[nextKey];
+    });
+  };
+
+  function checkCameraControl(){
+    var control = document.getElementById('cameras');
+    var monitor = document.getElementById('barcode-scanner');
+    if(control && monitor){
+      getVideoDevices();
+    }
+  };
+
+  function getVideoDevices(){
+    var cameras = [];
+    if(navigator.mediaDevices){
+      navigator.mediaDevices.enumerateDevices().then(function(devices){
+        devices.forEach(function(device){
+          if(device.kind == 'videoinput'){
+            cameras.push({name: device.label, id: device.deviceId});
+          }
+        });
+        setCameraControl(cameras);
+      });
+    }else{ // old-media-version
+      MediaStreamTrack.getSources(function(devices){
+        devices.forEach(function(device){
+          if(device.kind == 'video'){
+            cameras.push({name: device.facing, id: device.id});
+          }
+        });
+        setCameraControl(cameras);
+      });
+    }
+  };
+
+  function setCameraControl(cameras){
+    var control = document.getElementById('cameras');
+    if(control){
+      $('#cameras').empty();
+      if(cameras.length == 0){
+        var comment = document.createElement('p');
+        comment.innerText = 'カメラはありません';
+        control.appendChild(comment);
+      }else{
+        var comment = document.createElement('p');
+        comment.innerText = 'カメラを選択・起動';
+        control.appendChild(comment);
+        cameras.forEach(function(camera){
+          var button = document.createElement('input');
+          button.type = 'button';
+          button.value = camera.name;
+          button.onclick = callQuagga(camera.id);
+          control.appendChild(button);
+        });
+      }
+    }
+  };
+
+  function callQuagga(camera_id){
+    return function(){
+      $('#ok')[0].play();
+      $('#ng')[0].play();
+      loadQuagga(camera_id);
+    }
+  };
+
+  function loadQuagga(camera_id){
+    var results = [];
+    if(Quagga.initialized == undefined){
+      Quagga.onDetected(function(result){
+        var code = result.codeResult.code;
+        results.push(code);
+        if (results.length > 10){
+          code = orderByCount(results)[0];
+          results = [];
+          //Quagga.stop();
+          //alert(code);
+          $('#code').val(code);
+          if($('#auto').is(':checked')){
+            inputCode();
+          }
+        }
+      });
+      Quagga.onProcessed(function(result){
+        var drawingCtx = Quagga.canvas.ctx.overlay;
+        var drawingDom = Quagga.canvas.dom.overlay;
+        if(result){
+          if(result.boxes){
+            drawingCtx.clearRect(0, 0, parseInt(drawingDom.getAttribute('width')), parseInt(drawingDom.getAttribute('height')));
+            result.boxes.filter(function(box){
+              return box !== result.box;
+            }).forEach(function(box){
+              Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: 'green', lineWidth: 2});
+            });
+          }
+          if(result.box){
+            Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: 'blue', lineWidth: 2});
+          }
+          if(result.codeResult && result.codeResult.code){
+            Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: 'red', lineWidth: 3});
+          }
+        }
+      });
+    }
+    Quagga.init({
+      inputStream : {
+        name : 'Live',
+        type : 'LiveStream',
+        //numOfWorkers: navigator.hardwareConcurrency,
+        target: document.querySelector('#barcode-scanner'),
+        constraints: {deviceId: camera_id}
+      },
+      decoder: {
+        //readers : ['ean_reader', 'ean_8_reader', 'code_39_reader', 'code_39_vin_reader', 'codabar_reader', 'upc_reader', 'upc_e_reader']
+        readers : ['ean_reader']
+      }
+    }, function(err){
+      if(err){ console.log(err); return }
+      Quagga.initialized = true;
+      Quagga.start();
+    });
+  };
+
+  //$(document).on('turbolinks:load', checkCameraControl);
+  $(document).ready(checkCameraControl);
